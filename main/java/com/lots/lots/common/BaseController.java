@@ -2,6 +2,8 @@ package com.lots.lots.common;
 
 import cn.hutool.json.JSONObject;
 import com.lots.lots.util.XssSqlHttpServletRequestWrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.validation.annotation.Validated;
 
 import javax.annotation.Resource;
@@ -22,6 +24,7 @@ import java.util.Map;
  */
 @Validated
 public abstract class BaseController {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BaseController.class);
     @Resource
     protected HttpServletRequest request;
 
@@ -68,7 +71,7 @@ public abstract class BaseController {
                 dataMap.putAll(maps);
                 request.setAttribute(STR_BODY, dataMap);
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("读取request body失败", e);
             }
             return dataMap;
         }
@@ -140,7 +143,7 @@ public abstract class BaseController {
         try {
             response.getWriter().write(outStr);
         } catch (Exception e) {
-
+            LOGGER.error("写入response失败", e);
         }
     }
 

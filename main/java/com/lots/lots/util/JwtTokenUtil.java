@@ -256,10 +256,4 @@ public class JwtTokenUtil {
         }
     }
 
-    public static void main(String[] args) {
-        String token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJsb3RzIiwiY3JlYXRlZCI6MTYyMDcwMzUxOTk4OCwiZXhwIjoxNjIxMzA4MzE5fQ.Lf4Fk0inK5gXTbMKncs-ZLQOCPBqV1K1ouPjcHZx-wWjLu0fvHAXfyyGTMKDJVFI2Y5ricoQkdXGtRhsNsXxCA";
-        String claims = parseJwtPayload(token);
-        System.out.println(claims);
-
-    }
 }

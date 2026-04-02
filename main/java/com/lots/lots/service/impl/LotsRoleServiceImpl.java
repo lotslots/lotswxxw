@@ -89,12 +89,10 @@ public class LotsRoleServiceImpl implements LotsRoleService {
 
     @Override
     public int create(LotsRoleVo role) {
-        {
-            role.setCreateTime(new Date());
-            role.setAdminCount(0);
-            role.setSort(0);
-            return lotsRoleMapper.insert(role);
-        }
+        role.setCreateTime(new Date());
+        role.setAdminCount(0);
+        role.setSort(0);
+        return lotsRoleMapper.insert(role);
     }
 
     @Override
