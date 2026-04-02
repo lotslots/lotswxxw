@@ -95,19 +95,15 @@ public class GlobalExceptionHandler {
      * @return
      */
     public static String getExceptionInfo(Exception ex) {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream pout = new PrintStream(out);
-        ex.printStackTrace(pout);
-        String ret = new String(out.toByteArray());
-        try {
-            pout.close();
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             PrintStream pout = new PrintStream(out)) {
+            ex.printStackTrace(pout);
+            return out.toString();
         } catch (Exception e) {
+            Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+            logger.warn("获取异常信息失败", e);
+            return ex.getMessage();
         }
-        try {
-            out.close();
-        } catch (Exception e) {
-        }
-        return ret;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

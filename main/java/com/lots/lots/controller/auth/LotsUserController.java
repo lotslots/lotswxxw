@@ -19,6 +19,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.BindingResult;
@@ -49,6 +51,7 @@ import com.lots.lots.common.validation.*;
 @RequestMapping("admin")
 @Api(tags = "后台用户管理")
 public class LotsUserController extends BaseController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LotsUserController.class);
 
     @Value("${jwt.tokenHeader}")
     private String tokenHeader;
@@ -70,7 +73,7 @@ public class LotsUserController extends BaseController {
 
     @ApiOperation(value = "登录以后返回token")
     @PostMapping(value = "/login")
-    public JsonResult login( @RequestBody @Validated(Selete.class) LoginParam lotsUserVo) {
+    public JsonResult login( @RequestBody @Validated(Select.class) LoginParam lotsUserVo) {
         String token = adminService.login(lotsUserVo.getUsername(), lotsUserVo.getPassword());
         if (token == null) {
             return JsonResult.failed("用户名或密码错误");
@@ -226,26 +229,26 @@ public class LotsUserController extends BaseController {
 
     @ApiOperation("获取验证码图片")
     @GetMapping(value = "/getCaptcha")
-    public void getCaptcha() {
-        // 1. 创建图片验证码
+    public JsonResult getCaptcha() {
         CaptchaVo captchaVo = CaptchaUtils.createCaptchaImage(CaptChaiPo.builder().build());
         String captcha = captchaVo.getCaptcha();
         BufferedImage captchaImage = captchaVo.getCaptchaImage();
 
-        // 2. 设置验证码到Redis
-        String captchaRedisKey = String.format(CaptchaUtils.CAPTCHA_REDIS_PREFIX, captcha);
-        redisTemplate.opsForValue().set(captchaRedisKey, captcha, 6, TimeUnit.SECONDS);
-        // 3. 设置验证码到响应输出流
+        String captchaKey = cn.hutool.core.lang.UUID.randomUUID().toString(true);
+        String captchaRedisKey = String.format(CaptchaUtils.CAPTCHA_REDIS_PREFIX, captchaKey);
+        redisTemplate.opsForValue().set(captchaRedisKey, captcha, 300, TimeUnit.SECONDS);
+
         HttpServletResponse response = ServletUtils.getResponse();
         response.setContentType("image/png");
-        OutputStream output;
-        try {
-            output = response.getOutputStream();
-            // 响应结束时servlet会自动将output关闭
+        try (OutputStream output = response.getOutputStream()) {
             ImageIO.write(captchaImage, "png", output);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("生成验证码图片失败", e);
         }
+
+        Map<String, String> result = new HashMap<>(2);
+        result.put("captchaKey", captchaKey);
+        return JsonResult.success(result);
     }
 
 
